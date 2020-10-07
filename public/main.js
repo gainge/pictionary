@@ -28,6 +28,7 @@ function usernameAsk() {
 
 var context;
 var canvas;
+var lastDraw;
 var click = false;
 
 var clearScreen = function() {
@@ -110,6 +111,19 @@ var draw = function(obj) {
     context.fill();
 };
 
+var gibDraw = function(obj) {
+    context.beginPath();
+    context.strokeStyle = obj.color;
+    context.lineWidth = $('#selWidth').val();
+    context.lineJoin = "round";
+    context.moveTo(lastDraw.x, lastDraw.y);
+    context.lineTo(obj.position.x, obj.position.y);
+    context.closePath();
+    context.stroke();
+
+    Object.assign(lastDraw, obj.position)
+}
+
 var pictionary = function() {
     clearScreen();
     click = true;
@@ -143,6 +157,11 @@ var pictionary = function() {
     });
 
     canvas.on('mousedown', function(event) { 
+        var offset = canvas.offset();
+        lastDraw = {x: event.pageX - offset.left,
+                    y: event.pageY - offset.top};
+        // TODO: probably have to emit the down event coords as well
+        // Which honestly means we should just store them in a variable like earlier
         drawing = true;   
     });
     canvas.on('mouseup', function(event) {
@@ -155,7 +174,8 @@ var pictionary = function() {
                         y: event.pageY - offset.top};
         
         if (drawing == true && click == true) {
-            draw(obj);
+            // draw(obj);
+            gibDraw(obj)
             socket.emit('draw', obj);
         };
     });
