@@ -28,7 +28,7 @@ function usernameAsk() {
 
 var context;
 var canvas;
-var lastDraw;
+var lastDraw = {};
 var click = false;
 
 var clearScreen = function() {
@@ -114,9 +114,10 @@ var draw = function(obj) {
 var gibDraw = function(obj) {
     context.beginPath();
     context.strokeStyle = obj.color;
-    context.lineWidth = $('#selWidth').val();
+    context.lineWidth = $('#selWidth').val(); // TODO: add a slider or someting to select
+    context.lineWidth = 3;
     context.lineJoin = "round";
-    context.moveTo(lastDraw.x, lastDraw.y);
+    context.moveTo(obj.lastDraw.x, obj.lastDraw.y);
     context.lineTo(obj.position.x, obj.position.y);
     context.closePath();
     context.stroke();
@@ -172,11 +173,11 @@ var pictionary = function() {
         var offset = canvas.offset();
         obj.position = {x: event.pageX - offset.left,
                         y: event.pageY - offset.top};
+        obj.lastDraw = lastDraw;
         
         if (drawing == true && click == true) {
-            // draw(obj);
-            gibDraw(obj)
             socket.emit('draw', obj);
+            gibDraw(obj)
         };
     });
 
@@ -194,7 +195,7 @@ $(document).ready(function() {
     socket.on('userlist', userlist);
     socket.on('guesser', guesser);
     socket.on('guessword', guessword);
-    socket.on('draw', draw);
+    socket.on('draw', gibDraw);
     socket.on('draw word', drawWord);
     socket.on('drawer', pictionary);
     socket.on('new drawer', newDrawer);
